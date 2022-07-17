@@ -66,23 +66,40 @@ paraprosdokians = [
     "I'm supposed to respect my elders, but now it's getting harder and harder for me to find one."
 ]
 
-lists = [prompts, replies, one_liners, paraprosdokians]
+lists = {'prompts': prompts, 'replies': replies, 'one_liners': one_liners, 'paras': paraprosdokians}
 
 import json
 
-def write_to_file(contents):
-    with open("imports.py","a") as f:
-        f.write('[\n    ')
-        index = 1
-        last = len(contents)
-        for line in contents:
-            if index == last:
+def write_to_file(name, contents):
+    try:
+        with open(f"data/{name}.py","x") as f:
+            f.write(name + ' = ')
+            f.write('[\n    ')
+            index = 1
+            last = len(contents)
+            for line in contents:
+                if index == last:
+                    f.write(json.dumps(line))
+                    f.write('\n]\n\n')
+                    continue
                 f.write(json.dumps(line))
-                f.write('\n]\n\n')
-                continue
-            f.write(json.dumps(line))
-            f.write(',\n    ')
-            index += 1
+                f.write(',\n    ')
+                index += 1
+    except FileExistsError:
+        print("File exists already")
+        with open(f"data/{name}.py","w") as f:
+            f.write(name + ' = ')
+            f.write('[\n    ')
+            index = 1
+            last = len(contents)
+            for line in contents:
+                if index == last:
+                    f.write(json.dumps(line))
+                    f.write('\n]\n\n')
+                    continue
+                f.write(json.dumps(line))
+                f.write(',\n    ')
+                index += 1
 
 def create_list_of_dicts(list):
     to_import = []
@@ -90,11 +107,10 @@ def create_list_of_dicts(list):
         prompts_dict = {}
         prompts_dict['prompt'] = item
         to_import.append(prompts_dict)
-        print(to_import)
     return to_import
 
-for list in lists:
-    write_to_file(create_list_of_dicts(list))
+for k, v in lists.items():
+    write_to_file(k, create_list_of_dicts(v))
 
 # prompts_to_import = []
 
