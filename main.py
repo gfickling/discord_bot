@@ -1,6 +1,5 @@
 '''discord bot'''
 
-from cgi import print_arguments
 import discord
 from dotenv import load_dotenv
 import os

@@ -86,8 +86,8 @@ def write_to_file(name, contents):
                 f.write(',\n    ')
                 index += 1
     except FileExistsError:
-        print("File exists already")
-        with open(f"data/{name}.py","w") as f:
+        print(f"data/{name}.py already exists")
+        with open(f"data/{name}.py","a") as f:
             f.write(name + ' = ')
             f.write('[\n    ')
             index = 1
@@ -111,24 +111,3 @@ def create_list_of_dicts(list):
 
 for k, v in lists.items():
     write_to_file(k, create_list_of_dicts(v))
-
-# prompts_to_import = []
-
-# for item in prompts:
-#     prompts_dict = {}
-#     prompts_dict['prompt'] = item
-#     prompts_to_import.append(prompts_dict)
-#     print(prompts_to_import)
-
-# with open("imports.py","a") as f:
-#     f.write('[\n    ')
-#     index = 1
-#     last = len(prompts_to_import)
-#     for line in prompts_to_import:
-#         if index == last:
-#             f.write(json.dumps(line))
-#             f.write('\n]\n\n')
-#             continue
-#         f.write(json.dumps(line))
-#         f.write(',\n    ')
-#         index += 1
