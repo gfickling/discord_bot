@@ -1,9 +1,9 @@
 prompts = [
-    {"prompt": "who"},
-    {"prompt": "what"},
-    {"prompt": "when"},
-    {"prompt": "where"},
-    {"prompt": "why"},
-    {"prompt": "how"}
+    {"prompts": "who"},
+    {"prompts": "what"},
+    {"prompts": "when"},
+    {"prompts": "where"},
+    {"prompts": "why"},
+    {"prompts": "how"}
 ]
 

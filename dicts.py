@@ -100,14 +100,45 @@ def write_to_file(name, contents):
                 f.write(json.dumps(line))
                 f.write(',\n    ')
                 index += 1
+    try:
+        with open("data/database.py","x") as f:
+            f.write(name + ' = ')
+            f.write('[\n    ')
+            index = 1
+            last = len(contents)
+            for line in contents:
+                if index == last:
+                    f.write(json.dumps(line))
+                    f.write('\n]\n\n')
+                    continue
+                f.write(json.dumps(line))
+                f.write(',\n    ')
+                index += 1
+    except FileExistsError:
+        print("data/database.py already exists")
+        with open("data/database.py","a") as f:
+            f.write(name + ' = ')
+            f.write('[\n    ')
+            index = 1
+            last = len(contents)
+            for line in contents:
+                if index == last:
+                    f.write(json.dumps(line))
+                    f.write('\n]\n\n')
+                    continue
+                f.write(json.dumps(line))
+                f.write(',\n    ')
+                index += 1
 
-def create_list_of_dicts(list):
+
+
+def create_list_of_dicts(name, list_data):
     to_import = []
-    for item in list:
-        prompts_dict = {}
-        prompts_dict['prompt'] = item
-        to_import.append(prompts_dict)
+    for item in list_data:
+        temp_dict = {}
+        temp_dict[f'{name}'] = item
+        to_import.append(temp_dict)
     return to_import
 
 for k, v in lists.items():
-    write_to_file(k, create_list_of_dicts(v))
+    write_to_file(k, create_list_of_dicts(k, v))

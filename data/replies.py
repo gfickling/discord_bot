@@ -1,11 +1,11 @@
 replies = [
-    {"prompt": "Woah there"},
-    {"prompt": "This is not a drill"},
-    {"prompt": "You and whose army"},
-    {"prompt": "That's what she said"},
-    {"prompt": "In my past life, I was also an idiot"},
-    {"prompt": "Run in, go pants on fire"},
-    {"prompt": "It's not too late"},
-    {"prompt": "It's too late"}
+    {"replies": "Woah there"},
+    {"replies": "This is not a drill"},
+    {"replies": "You and whose army"},
+    {"replies": "That's what she said"},
+    {"replies": "In my past life, I was also an idiot"},
+    {"replies": "Run in, go pants on fire"},
+    {"replies": "It's not too late"},
+    {"replies": "It's too late"}
 ]
 
