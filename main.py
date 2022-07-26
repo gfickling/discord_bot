@@ -33,9 +33,6 @@ try:
 except Exception:
     print("Unable to connect to the Mondo DB Server")
 
-db = m_client.userReplies
-
-user_replies = db.replies
 
 def get_quote():
     response = requests.get('https://zenquotes.io/api/random')
@@ -43,8 +40,8 @@ def get_quote():
     quote = json_data[0]['q'] + " - " + json_data[0]['a']
     return(quote)
 
-# def update_replies(user_reply):
-#     if  
+def update_replies(user_reply):
+    if "replies" in db.
 
 @d_client.event
 async def on_ready():
