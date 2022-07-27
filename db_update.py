@@ -21,10 +21,17 @@ try:
 except Exception:
     print("Unable to connect to the Mondo DB Server")
 
+db = m_client.prompts
+result = db.questions.insert_many(prompts.prompts)
+pprint(result.inserted_ids)
 db = m_client.answers
-
-result = db.prompts.insert_many(prompts.prompts)
-
+result = db.replies.insert_many(replies.replies)
+pprint(result.inserted_ids)
+db = m_client.answers
+result = db.one_liners.insert_many(one_liners.one_liners)
+pprint(result.inserted_ids)
+db = m_client.answers
+result = db.paras.insert_many(paras.paras)
 pprint(result.inserted_ids)
 
 m_client.close()
