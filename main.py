@@ -14,10 +14,10 @@ from data import prompts, replies, one_liners, paras
 
 # Create lists of data for now...
 
-prompts_list = [d['prompts'] for d in prompts.prompts]
-replies_list = [d['replies'] for d in replies.replies]
-one_liners_list = [d['one_liners'] for d in one_liners.one_liners]
-paras_list = [d['paras'] for d in paras.paras]
+prompts_list = [d['prompt'] for d in prompts.prompts]
+replies_list = [d['reply'] for d in replies.replies]
+one_liners_list = [d['one_liner'] for d in one_liners.one_liners]
+paras_list = [d['para'] for d in paras.paras]
 
 # Local environmental variables
 load_dotenv()
@@ -32,6 +32,8 @@ try:
     print(m_client.server_info())
 except Exception:
     print("Unable to connect to the Mondo DB Server")
+
+prompts_from_db = m_client.prompts.questions.find()
 
 
 def get_quote():
