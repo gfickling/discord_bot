@@ -4,12 +4,16 @@ from pprint import pprint
 import pymongo
 import sys
 
-load_dotenv()
-
-sys.path.append(os.path.abspath("/home/gf/projects/discord_bot/data"))
 from data import prompts, replies, one_liners, paras
 
-# Mondo DB Connection
+#Load the local environment variables in .env
+load_dotenv()
+
+# These are the local "databases"
+sys.path.append(os.path.abspath("/home/gf/projects/discord_bot/data"))
+
+
+# Open Mondo DB Connection
 conn_str = os.getenv('MONDO_CONN')
 m_client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
 try:
@@ -17,8 +21,10 @@ try:
 except Exception:
     print("Unable to connect to the Mondo DB Server")
 
-db = m_client.paras
+db = m_client.answers
 
-result = db.paras.insert_many(paras.paras)
+result = db.prompts.insert_many(prompts.prompts)
 
 pprint(result.inserted_ids)
+
+m_client.close()

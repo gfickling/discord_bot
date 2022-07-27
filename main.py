@@ -40,8 +40,8 @@ def get_quote():
     quote = json_data[0]['q'] + " - " + json_data[0]['a']
     return(quote)
 
-def update_replies(user_reply):
-    if "replies" in db.
+# def update_replies(user_reply):
+#     if "replies" in db.
 
 @d_client.event
 async def on_ready():
@@ -64,7 +64,6 @@ async def on_message(message):
     if msg.startswith('$inspire'):
         quote = get_quote()
         await message.channel.send(quote)
-        await message.channel.send(file=discord.File('pup.jpeg'))
 
     if any((x:=word) in msg for word in prompts_list):
         await message.channel.send(x.upper() + '? ' + random.choice(replies_list))
