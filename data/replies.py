@@ -8,4 +8,3 @@ replies = [
     {"reply": "It's not too late"},
     {"reply": "It's too late"}
 ]
-
