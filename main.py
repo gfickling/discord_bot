@@ -1,13 +1,15 @@
 '''discord bot'''
 
+import os
+from secrets import token_hex
+import sys
 import discord
 from dotenv import load_dotenv
 import json
-import os
 import pymongo
 import random
 import requests
-import sys
+
 
 sys.path.append(os.path.abspath("/home/gf/projects/discord_bot/data"))
 from data import prompts, replies, one_liners, paras
@@ -21,6 +23,7 @@ paras_list = [d['para'] for d in paras.paras]
 
 # Local environmental variables
 load_dotenv()
+token = os.getenv("TOKEN")
 
 # Discord Connection
 d_client = discord.Client()
@@ -30,8 +33,9 @@ conn_str = os.getenv('MONDO_CONN')
 m_client = pymongo.MongoClient(conn_str, serverSelectionTimeoutMS=5000)
 try:
     print(m_client.server_info())
-except Exception:
+except Exception as e:
     print("Unable to connect to the Mondo DB Server")
+    print(e)
 
 prompts_from_db = m_client.prompts.questions.find()
 
@@ -70,4 +74,4 @@ async def on_message(message):
     if any((x:=word) in msg for word in prompts_list):
         await message.channel.send(x.upper() + '? ' + random.choice(replies_list))
 
-d_client.run(os.getenv('TOKEN'))
+d_client.run(token)
