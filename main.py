@@ -1,7 +1,6 @@
 '''discord bot'''
 
 import os
-from secrets import token_hex
 import sys
 import discord
 from dotenv import load_dotenv
@@ -23,7 +22,6 @@ paras_list = [d['para'] for d in paras.paras]
 
 # Local environmental variables
 load_dotenv()
-token = os.getenv("TOKEN")
 
 # Discord Connection
 d_client = discord.Client()
@@ -60,9 +58,10 @@ async def on_message(message):
         return
 
     msg = message.content.lower()
+    name = message.author.name
 
-    if msg.startswith('$hello'):
-        await message.channel.send('Hello!')
+    if msg.startswith('hello'):
+        await message.channel.send(f'Hello, {name}!')
 
     if msg.startswith('$pup'):
         await message.channel.send(file=discord.File('pup.jpeg'))
@@ -74,4 +73,4 @@ async def on_message(message):
     if any((x:=word) in msg for word in prompts_list):
         await message.channel.send(x.upper() + '? ' + random.choice(replies_list))
 
-d_client.run(token)
+d_client.run(os.getenv("TOKEN"))
