@@ -74,11 +74,11 @@ def get_quote():
     quote = json_data[0]['q'] + " - " + json_data[0]['a']
     return(quote)
 
-def check_dupe(answer_type, value):
+def check_dupe(value):
     '''Check for duplicate record in the database'''
-    exists = m_client.answers.answers.count_documents({answer_type: re.compile(value, re.IGNORECASE)})
+    exists = m_client.answers.answers.count_documents({'ans_lower': value.lower()})
     if exists != 0:
-        return f"'{value}' already exists as a {answer_type} option"
+        return f"'{value}' already exists in the database"
     return False
 
 def update_answers(section, user_reply):
@@ -116,7 +116,7 @@ async def on_message(message):
     if any((x:=word) in msg for word in commands.keys()):
         answer_type = commands[f'{x}']
         to_add = message.content.replace(x, '').strip()
-        if not (ret:=check_dupe(answer_type, to_add)):
+        if not (ret:=check_dupe(to_add)):
             update_answers(answer_type, to_add)
             await message.channel.send(f"{to_add} added as a {answer_type}")
         if ret:
