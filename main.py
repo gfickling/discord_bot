@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import json
 import pymongo
 import random
+import re
 import requests
 
 
@@ -75,15 +76,15 @@ def get_quote():
 
 def check_dupe(answer_type, value):
     '''Check for duplicate record in the database'''
-    answer_exists = m_client.answers.answers.find({answer_type: value})
-    if answer_exists.retrieved != 0:
+    exists = m_client.answers.answers.count_documents({answer_type: re.compile(value, re.IGNORECASE)})
+    if exists != 0:
         return f"'{value}' already exists as a {answer_type} option"
     return False
 
 def update_answers(section, user_reply):
     '''Insert a user generated reply into the database'''
-    to_add = {section: user_reply}
-    post_id = m_client.answers.user_replies.insert_one(to_add).inserted_id
+    to_add = {section: user_reply, 'ans_lower': user_reply.lower()}
+    post_id = m_client.answers.answers.insert_one(to_add).inserted_id
     print(f'User reply {user_reply} added, id: {post_id}')
 
 @d_client.event
