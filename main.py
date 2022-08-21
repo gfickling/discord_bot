@@ -66,7 +66,37 @@ except Exception as e:
 
 def get_answers():
     '''Gets all answers from database'''
-    answers = m_client.answers.answers.find()
+    answers = m_client.answers.answers.find()   
+    replies, paras, one_liners = ([] for i in range(3))
+    for i in answers:
+        try:
+            replies.append(i['reply'])
+        except KeyError:
+            pass
+        try:
+            paras.append(i['para'])
+        except KeyError:
+            pass
+        try:
+            one_liners.append(i['one_liner'])
+        except KeyError:
+            pass
+    with open("answers.txt", "w") as f:
+        f.write("\n\nReplies\n\n")
+        for r in replies:
+            f.write(r)
+            f.write("\n")
+        f.write("\n\nParas:\n\n")
+        for p in paras:
+            f.write(p)
+            f.write("\n")
+        f.write("\n\nOne Liners:\n\n")
+        for o in one_liners:
+            f.write(o)
+            f.write("\n")
+        
+
+get_answers()
 
 def db_prompts(prompt):
     '''Call with argument "all" to return all prompts from the database.
@@ -83,7 +113,7 @@ try:
 except TypeError as e:
     print(e)
     print("Prompts list does not exist or is empty")
-    
+
 def get_quote():
     '''Gets a random quote from https://zenquotes.io/api/random'''
     response = requests.get('https://zenquotes.io/api/random')
