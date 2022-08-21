@@ -59,8 +59,6 @@ try:
             colls = db_is.list_collection_names()
             for coll in colls:
                 coll_list.append((db_name, coll))
-    print("Databases: ", db_name_list)
-    print("Collections: ", coll_list)
 except Exception as e:
     print("Structure error")
     print(e)
@@ -70,20 +68,22 @@ def get_answers():
     '''Gets all answers from database'''
     answers = m_client.answers.answers.find()
 
-def get_questions(prompt):
-    '''Gets prompt from the database'''
+def db_prompts(prompt):
+    '''Call with argument "all" to return all prompts from the database.
+        Any other argument checks if prompt exists and returns argument'''
     if prompt == "all":
         prompts_from_db = m_client.prompts.questions.find()
         return prompts_from_db
-    prompts_from_db = m_client.prompts.questions.find({"prompt": prompt})
-    return prompts_from_db
+    prompt_exists = m_client.prompts.questions.find_one({"prompt": prompt})
+    if prompt_exists is not None:
+        return prompt_exists['prompt']
+    return False
+try:
+    prompts_list = [d['prompt'] for d in db_prompts("whee")]
+except TypeError as e:
+    print(e)
+    print("Prompts list does not exist or is empty")
     
-get_questions()
-
-print("prompts from db: ")
-for item in get_questions("all"):
-    print(item['prompt'])
-
 def get_quote():
     '''Gets a random quote from https://zenquotes.io/api/random'''
     response = requests.get('https://zenquotes.io/api/random')
