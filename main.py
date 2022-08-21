@@ -1,13 +1,13 @@
 '''discord bot'''
 
+import json
 import os
+import random
 import sys
+
 import discord
 from dotenv import load_dotenv
-import json
 import pymongo
-import random
-import re
 import requests
 
 
@@ -23,14 +23,19 @@ one_liners_list = [d['one_liner'] for d in one_liners.one_liners]
 paras_list = [d['para'] for d in paras.paras]
 
 # Local environmental variables
-try:
-    load_dotenv()
+result = load_dotenv()
+if result:
     print("Env Loaded")
-except False:
+else:
     print("Local Environment File Not Found")
 
 # Discord Connection
-d_client = discord.Client()
+intents = discord.Intents.default()
+intents.message_content = True
+d_client = discord.Client(intents=intents)
+
+# Open Discord App
+# os.system("/Applications/Discord.app/Contents/MacOS/Discord")
 
 # Mondo DB Connection
 conn_str = os.getenv('MONDO_CONN')
@@ -63,9 +68,21 @@ except Exception as e:
 
 def get_answers():
     '''Gets all answers from database'''
+    answers = m_client.answers.answers.find()
 
+def get_questions(prompt):
+    '''Gets prompt from the database'''
+    if prompt == "all":
+        prompts_from_db = m_client.prompts.questions.find()
+        return prompts_from_db
+    prompts_from_db = m_client.prompts.questions.find({"prompt": prompt})
+    return prompts_from_db
+    
+get_questions()
 
-prompts_from_db = m_client.prompts.questions.find()
+print("prompts from db: ")
+for item in get_questions("all"):
+    print(item['prompt'])
 
 def get_quote():
     '''Gets a random quote from https://zenquotes.io/api/random'''
@@ -98,10 +115,11 @@ async def on_message(message):
         return
 
     msg = message.content.lower()
+    print("User message: ", msg)
     user_name = message.author.name
 
     if msg.startswith('hello'):
-        await message.channel.send(f'Hello, {user_name}!')
+        ans = await message.channel.send(f'Hello, {user_name}!')
 
     if msg.startswith('pup'):
         await message.channel.send(file=discord.File('pup.jpeg'))
