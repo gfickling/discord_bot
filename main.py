@@ -3,6 +3,7 @@
 import json
 import os
 import random
+import re
 import sys
 
 import discord
@@ -145,7 +146,8 @@ async def on_message(message):
         return
 
     msg = message.content.lower()
-    print("User message: ", msg)
+    print("User message: ", msg, type(msg))
+    print(msg.split(), type(msg.split()))
     user_name = message.author.name
 
     if msg.startswith('hello'):
@@ -158,7 +160,8 @@ async def on_message(message):
         quote = get_quote()
         await message.channel.send(quote)
 
-    if any((x:=word) in msg for word in prompts_list):
+    if any((x:=word) in msg.split() for word in prompts_list):
+        print(x)
         await message.channel.send(x.upper() + '? ' + random.choice(replies_list))
 
     if any((x:=word) in msg for word in commands.keys()):
