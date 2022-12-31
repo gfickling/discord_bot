@@ -11,17 +11,17 @@ from dotenv import load_dotenv
 import pymongo
 import requests
 
-
 sys.path.append(os.path.abspath("/home/gf/projects/discord_bot/data"))
-from data import prompts, replies, one_liners, paras
 
-# Create lists of data for now...
 
+# Create lists of data from local database files in /data folder
+
+# from data import prompts, replies, one_liners, paras
 commands = {'add_reply': 'reply', 'add_one_liner': 'one_liner', 'add_para': 'para'}
-prompts_list = [d['prompt'] for d in prompts.prompts]
-replies_list = [d['reply'] for d in replies.replies]
-one_liners_list = [d['one_liner'] for d in one_liners.one_liners]
-paras_list = [d['para'] for d in paras.paras]
+# prompts_list = [d['prompt'] for d in prompts.prompts]
+# replies_list = [d['reply'] for d in replies.replies]
+# one_liners_list = [d['one_liner'] for d in one_liners.one_liners]
+# paras_list = [d['para'] for d in paras.paras]
 
 # Local environmental variables
 result = load_dotenv()
@@ -31,9 +31,13 @@ else:
     print("Local Environment File Not Found")
 
 # Discord Connection
-intents = discord.Intents.default()
-intents.message_content = True
-d_client = discord.Client(intents=intents)
+try:
+    intents = discord.Intents.default()
+    intents.message_content = True
+    d_client = discord.Client(intents=intents)
+    print("Discord Connected")
+except Exception as oops:
+    print(oops)
 
 # Open Discord App
 # os.system("/Applications/Discord.app/Contents/MacOS/Discord")
@@ -83,7 +87,7 @@ def get_answers():
         except KeyError:
             pass
     with open("answers.txt", "w") as f:
-        f.write("\n\nReplies\n\n")
+        f.write("\n\nReplies:\n\n")
         for r in replies:
             f.write(r)
             f.write("\n")
@@ -107,10 +111,11 @@ def db_prompts(prompt):
         return prompts_from_db
     prompt_exists = m_client.prompts.questions.find_one({"prompt": prompt})
     if prompt_exists is not None:
-        return prompt_exists['prompt']
-    return False
+        return prompt_exists[prompt]
+    else:
+        return
 try:
-    prompts_list = [d['prompt'] for d in db_prompts("whee")]
+    prompts_list = [d['prompt'] for d in db_prompts()]
 except TypeError as e:
     print(e)
     print("Prompts list does not exist or is empty")
