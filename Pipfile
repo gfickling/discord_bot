@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+aiohttp = "==3.*"
+aiosignal = "==1.*"
+async-timeout = "==4.*"
+attrs = "==22.*"
+charset-normalizer = "==2.*"
+discord = "==1.*"
+"discord.py" = "==2.*"
+dnspython = "==2.*"
+frozenlist = "==1.*"
+idna = "==3.*"
+multidict = "==6.*"
+pymongo = "==4.*"
+python-dotenv = "==0.*"
+requests = "==2.*"
+urllib3 = "==1.*"
+yarl = "==1.*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"

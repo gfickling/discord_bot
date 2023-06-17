@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import pymongo
 import requests
 import helpers
+from helpers import list_to_string
 
 sys.path.append(os.path.abspath("/home/gf/projects/discord_bot/data"))
 
@@ -18,6 +19,7 @@ sys.path.append(os.path.abspath("/home/gf/projects/discord_bot/data"))
 
 # from data import prompts, replies, one_liners, paras
 commands = {'add_reply': 'reply', 'add_one_liner': 'one_liner', 'add_para': 'para'}
+contractions = ["'d", "'s", "'ll", "'re", "'ve"]
 # prompts = [d['prompt'] for d in prompts.prompts]
 # replies = [d['reply'] for d in replies.replies]
 # one_liners = [d['one_liner'] for d in one_liners.one_liners]
@@ -122,6 +124,16 @@ try:
 except Exception as e:
     print("Problem loading database: ",e)
 
+# add contractions to prompts
+try:
+    prompts_to_update = prompts.copy()
+    for prompt in prompts_to_update:
+        for cont in contractions:
+            prompts.append(prompt + cont)
+            print (prompts[-1:])
+except Exception as e:
+    print("Problem with contractions", e)
+
 def get_quote():
     '''Gets a random quote from https://zenquotes.io/api/random'''
     response = requests.get('https://zenquotes.io/api/random')
@@ -166,7 +178,7 @@ async def on_message(message):
 
     if message.author == d_client.user:
         return
-    print(message.mentions)
+    print(message.content)
     msg_list = message.content.lower().split()
     print(msg_list)
     user_global_name = message.author.global_name
@@ -175,38 +187,42 @@ async def on_message(message):
             ans = await message.channel.send(f'Hello, {user_global_name}!')
             return
 
-        if 'pup' in msg_list:
+        elif 'pup' in msg_list:
             await message.channel.send(file=discord.File('pup.jpeg'))
             return
         
-        if 'inspire me' in msg_list:
+        elif 'inspire me' in msg_list:
             quote = get_quote()
             await message.channel.send(quote)
             return
         
-        if 'help' in msg_list:
+        elif 'help' in msg_list:
             help_message = build_help_message('help')
             await message.channel.send(help_message)
             return
         
-        if 'commands' in msg_list:
+        elif 'commands' in msg_list:
             help_message = build_help_message('commands')
             await message.channel.send(help_message)
             return
 
-        if any((x:=word) in msg_list for word in prompts):
+        elif any((x:=word) in msg_list for word in prompts):
             print(x)
-            await message.channel.send(x.upper() + '? ' + random.choice(replies))
+            await message.channel.send("All I can say is " + random.choice(replies))
             return
+        
+        elif any('?' in s for s in msg_list[-1:]):
+                await message.channel.send("If you're asking me? " + random.choice(replies))
+                return
 
-        if any((x:=word) in msg_list for word in commands.keys()):
+        elif any((x:=word) in msg_list for word in commands.keys()):
             answer_type = commands[f'{x}']
             to_add = message.content.replace(x, '').strip()
-            if not (ret:=check_dupe(to_add)):
+            if not (duplicate:=check_dupe(to_add)):
                 update_answers(answer_type, to_add)
                 await message.channel.send(f"{to_add} added as a {answer_type}")
-            if ret:
-                await message.channel.send(ret)
+            if duplicate:
+                await message.channel.send(duplicate)
             return
 
 
