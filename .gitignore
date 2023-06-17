@@ -2,6 +2,7 @@
 
 # Folder view configuration files
 .DS_Store
+.vscode*
 Desktop.ini
 
 # Thumbnail cache files
