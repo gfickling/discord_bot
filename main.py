@@ -3,13 +3,13 @@
 import json
 import os
 import random
-import re
 import sys
 
 import discord
 from dotenv import load_dotenv
 import pymongo
 import requests
+import helpers
 
 sys.path.append(os.path.abspath("/home/gf/projects/discord_bot/data"))
 
@@ -18,14 +18,14 @@ sys.path.append(os.path.abspath("/home/gf/projects/discord_bot/data"))
 
 # from data import prompts, replies, one_liners, paras
 commands = {'add_reply': 'reply', 'add_one_liner': 'one_liner', 'add_para': 'para'}
-# prompts_list = [d['prompt'] for d in prompts.prompts]
-# replies_list = [d['reply'] for d in replies.replies]
-# one_liners_list = [d['one_liner'] for d in one_liners.one_liners]
-# paras_list = [d['para'] for d in paras.paras]
+# prompts = [d['prompt'] for d in prompts.prompts]
+# replies = [d['reply'] for d in replies.replies]
+# one_liners = [d['one_liner'] for d in one_liners.one_liners]
+# paras = [d['para'] for d in paras.paras]
 
 # Local environmental variables
-result = load_dotenv()
-if result:
+RESULT = load_dotenv()
+if RESULT:
     print("Env Loaded")
 else:
     print("Local Environment File Not Found")
@@ -99,9 +99,7 @@ def get_answers():
         for o in one_liners:
             f.write(o)
             f.write("\n")
-        
-
-get_answers()
+    return replies, paras, one_liners
 
 def db_prompts(prompt):
     '''Call with argument "all" to return all prompts from the database.
@@ -113,12 +111,16 @@ def db_prompts(prompt):
     if prompt_exists is not None:
         return prompt_exists[prompt]
     else:
-        return
+        return []
+
+# load prompts and answers from database
 try:
-    prompts_list = [d['prompt'] for d in db_prompts()]
-except TypeError as e:
-    print(e)
-    print("Prompts list does not exist or is empty")
+    replies, paras, one_liners = get_answers()
+    prompts = [d['prompt'] for d in db_prompts("all")]
+    if not prompts:
+        print("Prompts list is empty")
+except Exception as e:
+    print("Problem loading database: ",e)
 
 def get_quote():
     '''Gets a random quote from https://zenquotes.io/api/random'''
@@ -140,43 +142,72 @@ def update_answers(section, user_reply):
     post_id = m_client.answers.answers.insert_one(to_add).inserted_id
     print(f'User reply {user_reply} added, id: {post_id}')
 
+def build_help_message(help_msg):
+    '''Put together the right string to send back in reply to a "help" request'''
+    if help_msg == 'help':
+        prompt_string = helpers.list_to_string(prompts)
+        prompts_help = 'I will answer questions with words that start contain ' + prompt_string +  'Other key words are "hello", "pup", and "inspire me". Type "commands" for a list of things you can update.'
+        print(prompts_help)
+        return prompts_help
+    if help_msg == 'commands':
+        command_string = helpers.list_to_string(commands)
+        print (command_string)
+        return (command_string)
+    else:
+        return "Invalid help question)"
+
+
 @d_client.event
 async def on_ready():
     print(f'We have logged in as {d_client.user}')
-
+    
 @d_client.event
 async def on_message(message):
 
     if message.author == d_client.user:
         return
+    print(message.mentions)
+    msg_list = message.content.lower().split()
+    print(msg_list)
+    user_global_name = message.author.global_name
+    if d_client.user.mentioned_in(message):#only reply to mentions
+        if 'hello' in msg_list:
+            ans = await message.channel.send(f'Hello, {user_global_name}!')
+            return
 
-    msg = message.content.lower()
-    print("User message: ", msg, type(msg))
-    print(msg.split(), type(msg.split()))
-    user_name = message.author.name
+        if 'pup' in msg_list:
+            await message.channel.send(file=discord.File('pup.jpeg'))
+            return
+        
+        if 'inspire me' in msg_list:
+            quote = get_quote()
+            await message.channel.send(quote)
+            return
+        
+        if 'help' in msg_list:
+            help_message = build_help_message('help')
+            await message.channel.send(help_message)
+            return
+        
+        if 'commands' in msg_list:
+            help_message = build_help_message('commands')
+            await message.channel.send(help_message)
+            return
 
-    if msg.startswith('hello'):
-        ans = await message.channel.send(f'Hello, {user_name}!')
+        if any((x:=word) in msg_list for word in prompts):
+            print(x)
+            await message.channel.send(x.upper() + '? ' + random.choice(replies))
+            return
 
-    if msg.startswith('pup'):
-        await message.channel.send(file=discord.File('pup.jpeg'))
-
-    if msg.startswith('inspire'):
-        quote = get_quote()
-        await message.channel.send(quote)
-
-    if any((x:=word) in msg.split() for word in prompts_list):
-        print(x)
-        await message.channel.send(x.upper() + '? ' + random.choice(replies_list))
-
-    if any((x:=word) in msg for word in commands.keys()):
-        answer_type = commands[f'{x}']
-        to_add = message.content.replace(x, '').strip()
-        if not (ret:=check_dupe(to_add)):
-            update_answers(answer_type, to_add)
-            await message.channel.send(f"{to_add} added as a {answer_type}")
-        if ret:
-            await message.channel.send(ret)
+        if any((x:=word) in msg_list for word in commands.keys()):
+            answer_type = commands[f'{x}']
+            to_add = message.content.replace(x, '').strip()
+            if not (ret:=check_dupe(to_add)):
+                update_answers(answer_type, to_add)
+                await message.channel.send(f"{to_add} added as a {answer_type}")
+            if ret:
+                await message.channel.send(ret)
+            return
 
 
 d_client.run(os.getenv("TOKEN"))
