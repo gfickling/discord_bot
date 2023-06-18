@@ -1,6 +1,5 @@
 '''discord bot'''
 
-import json
 import os
 import random
 import sys
@@ -8,9 +7,7 @@ import sys
 import discord
 from dotenv import load_dotenv
 import pymongo
-import requests
-import helpers
-from helpers import list_to_string
+from helpers import build_help_message, check_dupe, db_prompts, get_answers, get_quote, update_answers
 
 sys.path.append(os.path.abspath("/home/gf/projects/discord_bot/data"))
 
@@ -71,54 +68,10 @@ except Exception as e:
     print(e)
     sys.exit()
 
-def get_answers():
-    '''Gets all answers from database'''
-    answers = m_client.answers.answers.find()   
-    replies, paras, one_liners = ([] for i in range(3))
-    for i in answers:
-        try:
-            replies.append(i['reply'])
-        except KeyError:
-            pass
-        try:
-            paras.append(i['para'])
-        except KeyError:
-            pass
-        try:
-            one_liners.append(i['one_liner'])
-        except KeyError:
-            pass
-    with open("answers.txt", "w") as f:
-        f.write("\n\nReplies:\n\n")
-        for r in replies:
-            f.write(r)
-            f.write("\n")
-        f.write("\n\nParas:\n\n")
-        for p in paras:
-            f.write(p)
-            f.write("\n")
-        f.write("\n\nOne Liners:\n\n")
-        for o in one_liners:
-            f.write(o)
-            f.write("\n")
-    return replies, paras, one_liners
-
-def db_prompts(prompt):
-    '''Call with argument "all" to return all prompts from the database.
-        Any other argument checks if prompt exists and returns argument'''
-    if prompt == "all":
-        prompts_from_db = m_client.prompts.questions.find()
-        return prompts_from_db
-    prompt_exists = m_client.prompts.questions.find_one({"prompt": prompt})
-    if prompt_exists is not None:
-        return prompt_exists[prompt]
-    else:
-        return []
-
 # load prompts and answers from database
 try:
-    replies, paras, one_liners = get_answers()
-    prompts = [d['prompt'] for d in db_prompts("all")]
+    replies, paras, one_liners = get_answers(m_client)
+    prompts = [d['prompt'] for d in db_prompts(m_client, "all")]
     if not prompts:
         print("Prompts list is empty")
 except Exception as e:
@@ -134,48 +87,17 @@ try:
 except Exception as e:
     print("Problem with contractions", e)
 
-def get_quote():
-    '''Gets a random quote from https://zenquotes.io/api/random'''
-    response = requests.get('https://zenquotes.io/api/random')
-    json_data = json.loads(response.text)
-    quote = json_data[0]['q'] + " - " + json_data[0]['a']
-    return(quote)
 
-def check_dupe(value):
-    '''Check for duplicate record in the database'''
-    exists = m_client.answers.answers.count_documents({'ans_lower': value.lower()})
-    if exists != 0:
-        return f"'{value}' already exists in the database"
-    return False
-
-def update_answers(section, user_reply):
-    '''Insert a user generated reply into the database'''
-    to_add = {section: user_reply, 'ans_lower': user_reply.lower()}
-    post_id = m_client.answers.answers.insert_one(to_add).inserted_id
-    print(f'User reply {user_reply} added, id: {post_id}')
-
-def build_help_message(help_msg):
-    '''Put together the right string to send back in reply to a "help" request'''
-    if help_msg == 'help':
-        prompt_string = helpers.list_to_string(prompts)
-        prompts_help = 'I will answer questions with words that start contain ' + prompt_string +  'Other key words are "hello", "pup", and "inspire me". Type "commands" for a list of things you can update.'
-        print(prompts_help)
-        return prompts_help
-    if help_msg == 'commands':
-        command_string = helpers.list_to_string(commands)
-        print (command_string)
-        return (command_string)
-    else:
-        return "Invalid help question)"
 
 
 @d_client.event
 async def on_ready():
+    '''Connected to Discord?'''    
     print(f'We have logged in as {d_client.user}')
     
 @d_client.event
 async def on_message(message):
-
+    '''Interact with Discord'''
     if message.author == d_client.user:
         return
     print(message.content)
@@ -184,25 +106,25 @@ async def on_message(message):
     user_global_name = message.author.global_name
     if d_client.user.mentioned_in(message):#only reply to mentions
         if 'hello' in msg_list:
-            ans = await message.channel.send(f'Hello, {user_global_name}!')
+            await message.channel.send(f'Hello, {user_global_name}!')
             return
 
         elif 'pup' in msg_list:
             await message.channel.send(file=discord.File('pup.jpeg'))
             return
         
-        elif 'inspire me' in msg_list:
+        elif any(word in ['inspire', 'inspiring', 'inspiration','inspirational'] for word in msg_list):
             quote = get_quote()
             await message.channel.send(quote)
             return
         
         elif 'help' in msg_list:
-            help_message = build_help_message('help')
+            help_message = build_help_message(prompts, 'help')
             await message.channel.send(help_message)
             return
         
         elif 'commands' in msg_list:
-            help_message = build_help_message('commands')
+            help_message = build_help_message(commands, 'commands')
             await message.channel.send(help_message)
             return
 

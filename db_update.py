@@ -1,7 +1,9 @@
+'''Update Mondo Database with bot commands and replies'''
+
 import os
 import sys
-from dotenv import load_dotenv
 from pprint import pprint
+from dotenv import load_dotenv
 import pymongo
 
 
