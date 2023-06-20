@@ -83,7 +83,7 @@ try:
     for prompt in prompts_to_update:
         for cont in contractions:
             prompts.append(prompt + cont)
-            print (prompts[-1:])
+
 except Exception as e:
     print("Problem with contractions", e)
 
@@ -113,10 +113,11 @@ async def on_message(message):
             await message.channel.send(file=discord.File('pup.jpeg'))
             return
         
-        elif any(word in ['inspire', 'inspiring', 'inspiration','inspirational'] for word in msg_list):
-            quote = get_quote()
-            await message.channel.send(quote)
-            return
+        elif any((x:=word) in ['inspire', 'inspiring', 'inspiration','inspirational'] for word in msg_list):
+                print(x)
+                quote = get_quote()
+                await message.channel.send(quote)
+                return
         
         elif 'help' in msg_list:
             help_message = build_help_message(prompts, 'help')
