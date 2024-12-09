@@ -9,11 +9,12 @@ import pymongo
 
 from data import prompts, replies, one_liners, paras
 
-#Load the local environment variables in .env
+# Load the local environment variables in .env
 load_dotenv()
 
 # These are the local "databases"
-sys.path.append(os.path.abspath("/Users/graemefickling/projects/discord_bot/data"))
+sys.path.append(os.path.abspath(
+    "/Users/graemefickling/projects/discord_bot/data"))
 
 # Open Mondo DB Connection
 conn_str = os.getenv('MONDO_CONN')
@@ -23,6 +24,8 @@ try:
 except Exception as e:
     print("Unable to connect to the Mondo DB Server")
     print(e)
+
+
 def add_records():
     db = m_client.prompts
     result = db.questions.insert_many(prompts.prompts)
@@ -35,7 +38,9 @@ def add_records():
     result = db.answers.insert_many(paras.paras)
     pprint(result.inserted_ids)
 
+
 answer_types = ['reply', 'one_liner', 'para']
+
 
 def add_ans_lower():
     db = m_client.answers
@@ -44,10 +49,12 @@ def add_ans_lower():
             try:
                 val = doc[answer_type].lower()
                 doc_id = doc['_id']
-                db.answers.find_one_and_update({'_id':doc_id}, { '$set': {'ans_lower': val}})
+                db.answers.find_one_and_update(
+                    {'_id': doc_id}, {'$set': {'ans_lower': val}})
             except Exception as e:
                 print(e)
                 pass
+
 
 # add_records()
 # add_ans_lower()

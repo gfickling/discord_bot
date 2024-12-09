@@ -15,7 +15,8 @@ sys.path.append(os.path.abspath("/home/gf/projects/discord_bot/data"))
 # Create lists of data from local database files in /data folder
 
 # from data import prompts, replies, one_liners, paras
-commands = {'add_reply': 'reply', 'add_one_liner': 'one_liner', 'add_para': 'para'}
+commands = {'add_reply': 'reply',
+            'add_one_liner': 'one_liner', 'add_para': 'para'}
 contractions = ["'d", "'s", "'ll", "'re", "'ve"]
 # prompts = [d['prompt'] for d in prompts.prompts]
 # replies = [d['reply'] for d in replies.replies]
@@ -39,7 +40,7 @@ except Exception as oops:
     print(oops)
 
 # Open Discord App
-# os.system("/Applications/Discord.app/Contents/MacOS/Discord")
+os.system("/Applications/Discord.app/Contents/MacOS/Discord")
 
 # Mondo DB Connection
 conn_str = os.getenv('MONDO_CONN')
@@ -75,7 +76,7 @@ try:
     if not prompts:
         print("Prompts list is empty")
 except Exception as e:
-    print("Problem loading database: ",e)
+    print("Problem loading database: ", e)
 
 # add contractions to prompts
 try:
@@ -88,13 +89,12 @@ except Exception as e:
     print("Problem with contractions", e)
 
 
-
-
 @d_client.event
 async def on_ready():
-    '''Connected to Discord?'''    
+    '''Connected to Discord?'''
     print(f'We have logged in as {d_client.user}')
-    
+
+
 @d_client.event
 async def on_message(message):
     '''Interact with Discord'''
@@ -104,7 +104,7 @@ async def on_message(message):
     msg_list = message.content.lower().split()
     print(msg_list)
     user_global_name = message.author.global_name
-    if d_client.user.mentioned_in(message):#only reply to mentions
+    if d_client.user.mentioned_in(message):  # only reply to mentions
         if 'hello' in msg_list:
             await message.channel.send(f'Hello, {user_global_name}!')
             return
@@ -112,36 +112,36 @@ async def on_message(message):
         elif 'pup' in msg_list:
             await message.channel.send(file=discord.File('pup.jpeg'))
             return
-        
-        elif any((x:=word) in ['inspire', 'inspiring', 'inspiration','inspirational'] for word in msg_list):
-                print(x)
-                quote = get_quote()
-                await message.channel.send(quote)
-                return
-        
+
+        elif any((x := word) in ['inspire', 'inspiring', 'inspiration', 'inspirational'] for word in msg_list):
+            print(x)
+            quote = get_quote()
+            await message.channel.send(quote)
+            return
+
         elif 'help' in msg_list:
             help_message = build_help_message(prompts, 'help')
             await message.channel.send(help_message)
             return
-        
+
         elif 'commands' in msg_list:
             help_message = build_help_message(commands, 'commands')
             await message.channel.send(help_message)
             return
 
-        elif any((x:=word) in msg_list for word in prompts):
+        elif any((x := word) in msg_list for word in prompts):
             print(x)
             await message.channel.send("All I can say is " + random.choice(replies))
             return
-        
-        elif any('?' in s for s in msg_list[-1:]):
-                await message.channel.send("If you're asking me? " + random.choice(replies))
-                return
 
-        elif any((x:=word) in msg_list for word in commands.keys()):
+        elif any('?' in s for s in msg_list[-1:]):
+            await message.channel.send("If you're asking me? " + random.choice(replies))
+            return
+
+        elif any((x := word) in msg_list for word in commands.keys()):
             answer_type = commands[f'{x}']
             to_add = message.content.replace(x, '').strip()
-            if not (duplicate:=check_dupe(to_add)):
+            if not (duplicate := check_dupe(to_add)):
                 update_answers(answer_type, to_add)
                 await message.channel.send(f"{to_add} added as a {answer_type}")
             if duplicate:

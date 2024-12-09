@@ -2,26 +2,31 @@
 import json
 import requests
 
+
 def build_help_message(help_with, help_msg):
     '''Put together the right string to send back in reply to a "help" request'''
     if help_msg == 'help':
         prompt_string = list_to_string(help_with)
-        prompts_help = 'I will answer questions with words that start contain ' + prompt_string +  'Other key words are "hello", "pup", and "inspire me". Type "commands" for a list of things you can update.'
+        prompts_help = 'I will answer questions with words that start contain ' + prompt_string + \
+            'Other key words are "hello", "pup", and "inspire me". Type "commands" for a list of things you can update.'
         print(prompts_help)
         return prompts_help
     if help_msg == 'commands':
         command_string = list_to_string(help_with)
-        print (command_string)
+        print(command_string)
         return (command_string)
     else:
         return "Invalid help question)"
 
+
 def check_dupe(m_client, value):
     '''Check for duplicate record in the database'''
-    exists = m_client.answers.answers.count_documents({'ans_lower': value.lower()})
+    exists = m_client.answers.answers.count_documents(
+        {'ans_lower': value.lower()})
     if exists != 0:
         return f"'{value}' already exists in the database"
     return False
+
 
 def db_prompts(m_client, prompt):
     '''Call with argument "all" to return all prompts from the database.
@@ -35,9 +40,10 @@ def db_prompts(m_client, prompt):
     else:
         return []
 
+
 def get_answers(m_client):
     '''Gets all answers from database'''
-    answers = m_client.answers.answers.find()   
+    answers = m_client.answers.answers.find()
     replies, paras, one_liners = ([] for i in range(3))
     for i in answers:
         try:
@@ -67,14 +73,17 @@ def get_answers(m_client):
             f.write("\n")
     return replies, paras, one_liners
 
+
 def get_quote():
     '''Gets a random quote from https://zenquotes.io/api/random'''
     response = requests.get('https://zenquotes.io/api/random')
-    try: 
+    try:
         response.status_code == requests.codes.ok
+        print(response.status_code)
         json_data = json.loads(response.text)
         quote = json_data[0]['q'] + " - " + json_data[0]['a']
-        return(quote)
+        print(quote)
+        return (quote)
     except requests.exceptions.RequestException as e:
         print("Request Exception" + e)
         return ("Unable to inspire you right now, my source is down")
@@ -89,6 +98,7 @@ def list_to_string(list_name):
         else:
             string += 'or "' + p + '". '
     return string
+
 
 def update_answers(m_client, section, user_reply):
     '''Insert a user generated reply into the database'''
